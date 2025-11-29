@@ -1,0 +1,88 @@
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left),
+ * right(right) {}
+ * };
+ */
+class Solution {
+public:
+    void track_parent_fun(TreeNode* root,
+                          unordered_map<TreeNode*, TreeNode*>& parent_track) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            TreeNode* current = q.front();
+            q.pop();
+            if (current->left) {
+                parent_track[current->left] = current;
+                q.push(current->left);
+            }
+            if (current->right) {
+                parent_track[current->right] = current;
+                q.push(current->right);
+            }
+        }
+    }
+    int amountOfTime(TreeNode* root, int start) {
+        unordered_map<TreeNode*, TreeNode*> parent_track;
+
+        track_parent_fun(root, parent_track);
+
+        queue<TreeNode*> q;
+        unordered_map<TreeNode*, bool> visited;
+        int min = 0;
+
+        queue<TreeNode*> q2;
+        TreeNode* target;
+        q2.push(root);
+        while (!q2.empty()) {
+            TreeNode* current = q2.front();
+            q2.pop();
+
+            if (current->val == start) {
+                target = current;
+                break;
+            }
+
+            if (current->left)
+                q2.push(current->left);
+            if (current->right)
+                q2.push(current->right);
+        }
+
+        q.push(target);
+        visited[target] = true;
+
+        while (!q.empty()) {
+            int size = q.size();
+            min++;
+
+            for (int i = 0; i < size; i++) {
+                TreeNode* current = q.front();
+                q.pop();
+                if (current->left && !visited[current->left]) {
+                    q.push(current->left);
+                    visited[current->left] = true;
+                }
+                if (current->right && !visited[current->right]) {
+                    q.push(current->right);
+                    visited[current->right] = true;
+                }
+                if (parent_track[current] && !visited[parent_track[current]]) {
+                    q.push(parent_track[current]);
+                    visited[parent_track[current]] = true;
+                }
+            }
+        }
+        return min -1; // ek kam hoga kyu ki last ke nodes jaise hi visit honge poora
+                  // tree infect ho chuka hoga abb un last nodes se baaki nodes
+                  // check karne waala ek loop to chalega but uska koi relevance
+                  // minute me nahi hoga thats why ham -1 kar denge.
+    }
+};
